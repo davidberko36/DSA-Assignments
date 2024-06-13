@@ -2,11 +2,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class SortingAndSearchingAlgorithmGUI extends JFrame implements ActionListener {
     private JComboBox<String> algorithmComboBox;
-    private JComboBox<String> searchComboBox;
     private JTextField inputField;
     private JTextField searchField;
     private JTextArea outputArea;
@@ -16,16 +17,19 @@ public class SortingAndSearchingAlgorithmGUI extends JFrame implements ActionLis
     public SortingAndSearchingAlgorithmGUI() {
         setTitle("Sorting and Searching Algorithm GUI");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout(10, 10));
+        setLayout(new BorderLayout());
 
-        // Top panel setup
-        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        algorithmComboBox = new JComboBox<>(new String[]{"Bubble Sort", "Quick Sort", "Heap Sort", "Insertion Sort", "Selection Sort", "Merge Sort", "Shell Sort"});
-        searchComboBox = new JComboBox<>(new String[]{"Linear Search", "Binary Search", "DFS"});
+        JPanel topPanel = new JPanel(new FlowLayout());
+        algorithmComboBox = new JComboBox<>(new String[]{
+                "Bubble Sort", "Quick Sort", "Heap Sort", "Insertion Sort",
+                "Selection Sort", "Merge Sort", "Shell Sort",
+                "Linear Search", "Binary Search", "Exhaustive Search", "Brute Force Search"
+        });
         inputField = new JTextField(20);
         searchField = new JTextField(10);
         sortButton = new JButton("Sort");
         searchButton = new JButton("Search");
+
         sortButton.addActionListener(this);
         searchButton.addActionListener(this);
 
@@ -33,20 +37,15 @@ public class SortingAndSearchingAlgorithmGUI extends JFrame implements ActionLis
         topPanel.add(algorithmComboBox);
         topPanel.add(new JLabel("Input:"));
         topPanel.add(inputField);
-        topPanel.add(sortButton);
-
-        topPanel.add(new JLabel("Search Algorithm:"));
-        topPanel.add(searchComboBox);
-        topPanel.add(new JLabel("Search Value:"));
+        topPanel.add(new JLabel("Search:"));
         topPanel.add(searchField);
+        topPanel.add(sortButton);
         topPanel.add(searchButton);
 
-        // Output area setup
         outputArea = new JTextArea(10, 30);
         outputArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(outputArea);
 
-        // Add components to the frame
         add(topPanel, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
         pack();
@@ -56,61 +55,34 @@ public class SortingAndSearchingAlgorithmGUI extends JFrame implements ActionLis
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == sortButton) {
-            String inputString = inputField.getText().trim();
-            if (inputString.isEmpty()) {
-                outputArea.setText("Input cannot be empty. Please enter integers separated by commas.");
-                return;
-            }
+        String algorithm = (String) algorithmComboBox.getSelectedItem();
+        String inputString = inputField.getText();
 
-            String[] inputArray = inputString.split(",");
-            int[] arr = new int[inputArray.length];
+        if (e.getSource() == sortButton) {
             try {
-                for (int i = 0; i < inputArray.length; i++) {
-                    arr[i] = Integer.parseInt(inputArray[i].trim());
-                }
-                String algorithm = (String) algorithmComboBox.getSelectedItem();
+                String[] inputArray = inputString.split(",");
+                int[] arr = Arrays.stream(inputArray).mapToInt(Integer::parseInt).toArray();
                 int[] sortedArr = sortArray(algorithm, arr);
-                outputArea.setText("Sorted array: " + Arrays.toString(sortedArr));
+                outputArea.setText(Arrays.toString(sortedArr));
             } catch (NumberFormatException ex) {
                 outputArea.setText("Invalid input. Please enter integers separated by commas.");
             }
         } else if (e.getSource() == searchButton) {
-            String inputString = inputField.getText().trim();
-            String searchString = searchField.getText().trim();
-            if (inputString.isEmpty() || searchString.isEmpty()) {
-                outputArea.setText("Input and search value cannot be empty. Please enter integers.");
-                return;
-            }
-
-            String[] inputArray = inputString.split(",");
-            int[] arr = new int[inputArray.length];
             try {
-                for (int i = 0; i < inputArray.length; i++) {
-                    arr[i] = Integer.parseInt(inputArray[i].trim());
-                }
-                int target = Integer.parseInt(searchString.trim());
-                String searchAlgorithm = (String) searchComboBox.getSelectedItem();
-                if (searchAlgorithm.equals("DFS")) {
-                    int vertices = arr.length;
-                    DFS dfs = new DFS(vertices);
-                    // For demonstration, adding some edges to the graph
-                    // You can customize this part as per your requirements
-                    for (int i = 0; i < vertices - 1; i++) {
-                        dfs.addEdge(arr[i], arr[i + 1]);
-                    }
-                    outputArea.setText("DFS Traversal starting from vertex " + target + ": ");
-                    dfs.DFS(target, outputArea);
-                } else {
-                    int index = searchArray(searchAlgorithm, arr, target);
-                    if (index != -1) {
-                        outputArea.setText("Element found at index: " + index);
-                    } else {
-                        outputArea.setText("Element not found in the array.");
-                    }
+                String[] inputArray = inputString.split(",");
+                int[] arr = Arrays.stream(inputArray).mapToInt(Integer::parseInt).toArray();
+                String targetString = searchField.getText();
+
+                if (algorithm.equals("Linear Search") || algorithm.equals("Binary Search") || algorithm.equals("Exhaustive Search")) {
+                    int target = Integer.parseInt(targetString);
+                    int index = searchArray(algorithm, arr, target);
+                    outputArea.setText("Index: " + index);
+                } else if (algorithm.equals("Brute Force Search")) {
+                    int index = bruteForceSearch(inputString, targetString);
+                    outputArea.setText("Index: " + index);
                 }
             } catch (NumberFormatException ex) {
-                outputArea.setText("Invalid input. Please enter integers.");
+                outputArea.setText("Invalid input or target. Please enter integers.");
             }
         }
     }
@@ -147,8 +119,37 @@ public class SortingAndSearchingAlgorithmGUI extends JFrame implements ActionLis
             case "Linear Search":
                 return linearSearch(arr, target);
             case "Binary Search":
-                Arrays.sort(arr);  // Ensure array is sorted for binary search
+                Arrays.sort(arr); // Binary search requires sorted array
                 return binarySearch(arr, target);
+            case "Exhaustive Search":
+                return exhaustiveSearch(arr, target) ? target : -1;
+        }
+        return -1;
+    }
+
+    private boolean exhaustiveSearch(int[] arr, int target) {
+        for (int num : arr) {
+            if (num == target) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int bruteForceSearch(String text, String pattern) {
+        int n = text.length();
+        int m = pattern.length();
+
+        for (int i = 0; i <= n - m; i++) {
+            int j;
+            for (j = 0; j < m; j++) {
+                if (text.charAt(i + j) != pattern.charAt(j)) {
+                    break;
+                }
+            }
+            if (j == m) {
+                return i;
+            }
         }
         return -1;
     }
@@ -157,7 +158,7 @@ public class SortingAndSearchingAlgorithmGUI extends JFrame implements ActionLis
         new SortingAndSearchingAlgorithmGUI();
     }
 
-    // Bubble Sort implementation
+    // Sorting and searching algorithms implementations
     public static void bubbleSort(int[] arr) {
         for (int i = 0; i < arr.length - 1; i++) {
             for (int j = 0; j < arr.length - i - 1; j++) {
@@ -170,7 +171,6 @@ public class SortingAndSearchingAlgorithmGUI extends JFrame implements ActionLis
         }
     }
 
-    // Quick Sort implementation
     public static void quickSort(int[] arr, int low, int high) {
         if (low < high) {
             int pivotIndex = partition(arr, low, high);
@@ -198,7 +198,6 @@ public class SortingAndSearchingAlgorithmGUI extends JFrame implements ActionLis
         arr[j] = temp;
     }
 
-    // Heap Sort implementation
     public static void heapSort(int[] arr) {
         int n = arr.length;
 
@@ -209,7 +208,6 @@ public class SortingAndSearchingAlgorithmGUI extends JFrame implements ActionLis
 
         // One by one extract elements from heap
         for (int i = n - 1; i > 0; i--) {
-            // Move current root to end
             int temp = arr[0];
             arr[0] = arr[i];
             arr[i] = temp;
@@ -224,67 +222,54 @@ public class SortingAndSearchingAlgorithmGUI extends JFrame implements ActionLis
         int left = 2 * i + 1;
         int right = 2 * i + 2;
 
-        // If left child is larger than root
-        if (left < n && arr[left] > arr[largest])
-            largest = left;
+        if (left < n && arr[left] > arr[largest]) largest = left;
+        if (right < n && arr[right] > arr[largest]) largest = right;
 
-        // If right child is larger than largest so far
-        if (right < n && arr[right] > arr[largest])
-            largest = right;
-
-        // If largest is not root
         if (largest != i) {
             int swap = arr[i];
             arr[i] = arr[largest];
             arr[largest] = swap;
 
-            // Recursively heapify the affected sub-tree
             heapify(arr, n, largest);
         }
     }
 
-    // Insertion Sort implementation
-    public static void insertionSort(int[] array, boolean ascending) {
-        for (int i = 1; i < array.length; i++) {
-            int key = array[i];
+    public static void insertionSort(int[] arr, boolean ascending) {
+        for (int i = 1; i < arr.length; i++) {
+            int key = arr[i];
             int j = i - 1;
             if (ascending) {
-                while (j >= 0 && array[j] > key) {
-                    array[j + 1] = array[j];
+                while (j >= 0 && arr[j] > key) {
+                    arr[j + 1] = arr[j];
                     j = j - 1;
                 }
             } else {
-                while (j >= 0 && array[j] < key) {
-                    array[j + 1] = array[j];
+                while (j >= 0 && arr[j] < key) {
+                    arr[j + 1] = arr[j];
                     j = j - 1;
                 }
             }
-            array[j + 1] = key;
+            arr[j + 1] = key;
         }
     }
 
-    // Selection Sort implementation
     public static void selectionSort(int[] arr) {
-        int n = arr.length;
-
-        for (int i = 0; i < n - 1; i++) {
-            int min_idx = i;
-            for (int j = i + 1; j < n; j++) {
-                if (arr[j] < arr[min_idx]) {
-                    min_idx = j;
+        for (int i = 0; i < arr.length - 1; i++) {
+            int minIdx = i;
+            for (int j = i + 1; j < arr.length; j++) {
+                if (arr[j] < arr[minIdx]) {
+                    minIdx = j;
                 }
             }
-
-            int temp = arr[min_idx];
-            arr[min_idx] = arr[i];
+            int temp = arr[minIdx];
+            arr[minIdx] = arr[i];
             arr[i] = temp;
         }
     }
 
-    // Merge Sort implementation
     public static void mergeSort(int[] arr, int left, int right) {
         if (left < right) {
-            int mid = left + (right - left) / 2;
+            int mid = (left + right) / 2;
             mergeSort(arr, left, mid);
             mergeSort(arr, mid + 1, right);
             merge(arr, left, mid, right);
@@ -294,13 +279,12 @@ public class SortingAndSearchingAlgorithmGUI extends JFrame implements ActionLis
     private static void merge(int[] arr, int left, int mid, int right) {
         int n1 = mid - left + 1;
         int n2 = right - mid;
+
         int[] L = new int[n1];
         int[] R = new int[n2];
 
-        for (int i = 0; i < n1; ++i)
-            L[i] = arr[left + i];
-        for (int j = 0; j < n2; ++j)
-            R[j] = arr[mid + 1 + j];
+        System.arraycopy(arr, left, L, 0, n1);
+        System.arraycopy(arr, mid + 1, R, 0, n2);
 
         int i = 0, j = 0;
         int k = left;
@@ -328,23 +312,20 @@ public class SortingAndSearchingAlgorithmGUI extends JFrame implements ActionLis
         }
     }
 
-    // Shell Sort implementation
-    public static void shellSort(int[] array) {
-        int n = array.length;
-
+    public static void shellSort(int[] arr) {
+        int n = arr.length;
         for (int gap = n / 2; gap > 0; gap /= 2) {
             for (int i = gap; i < n; i++) {
-                int temp = array[i];
+                int temp = arr[i];
                 int j;
-                for (j = i; j >= gap && array[j - gap] > temp; j -= gap) {
-                    array[j] = array[j - gap];
+                for (j = i; j >= gap && arr[j - gap] > temp; j -= gap) {
+                    arr[j] = arr[j - gap];
                 }
-                array[j] = temp;
+                arr[j] = temp;
             }
         }
     }
 
-    // Linear Search implementation
     public static int linearSearch(int[] arr, int target) {
         for (int i = 0; i < arr.length; i++) {
             if (arr[i] == target) {
@@ -354,14 +335,11 @@ public class SortingAndSearchingAlgorithmGUI extends JFrame implements ActionLis
         return -1;
     }
 
-    // Binary Search implementation
     public static int binarySearch(int[] arr, int target) {
         int left = 0;
         int right = arr.length - 1;
-
         while (left <= right) {
             int mid = left + (right - left) / 2;
-
             if (arr[mid] == target) {
                 return mid;
             } else if (arr[mid] < target) {
@@ -370,41 +348,7 @@ public class SortingAndSearchingAlgorithmGUI extends JFrame implements ActionLis
                 right = mid - 1;
             }
         }
-
         return -1;
     }
-
-    // DFS Class
-    public static class DFS {
-        private int V;
-        private LinkedList<Integer>[] adj;
-
-        public DFS(int v) {
-            V = v;
-            adj = new LinkedList[v];
-            for (int i = 0; i < v; ++i) {
-                adj[i] = new LinkedList<>();
-            }
-        }
-
-        void addEdge(int v, int w) {
-            adj[v].add(w);
-        }
-
-        void DFSUtil(int v, boolean[] visited, JTextArea outputArea) {
-            visited[v] = true;
-            outputArea.append(v + " ");
-
-            for (int n : adj[v]) {
-                if (!visited[n]) {
-                    DFSUtil(n, visited, outputArea);
-                }
-            }
-        }
-
-        void DFS(int v, JTextArea outputArea) {
-            boolean[] visited = new boolean[V];
-            DFSUtil(v, visited, outputArea);
-        }
-    }
 }
+
