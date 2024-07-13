@@ -1,42 +1,32 @@
-import java.util.Scanner;
+import java.util.*;
 
 public class TravelingSalesman {
-
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
+        // Read the number of cities
         System.out.print("Enter the number of cities: ");
         int numCities = scanner.nextInt();
-        scanner.nextLine(); // Consume newline
+        scanner.nextLine(); // Consume the newline character
 
+        // Read the distance matrix
         System.out.print("Enter the " + numCities + "x" + numCities + " distance matrix (columns separated by commas and rows by semicolons): ");
         String matrixInput = scanner.nextLine();
+        int[][] distanceMatrix = parseMatrix(matrixInput, numCities);
 
-        int[][] matrix = parseMatrix(matrixInput, numCities);
+        // Find the shortest path using the Nearest Neighbor algorithm
+        int[] path = nearestNeighborTSP(distanceMatrix);
 
-        int[] shortestPath = new int[numCities];
-        for (int i = 0; i < numCities; i++) {
-            shortestPath[i] = i;
-        }
+        // Calculate the total distance of the path
+        int totalDistance = calculateTotalDistance(path, distanceMatrix);
 
-        int[] bestPath = new int[numCities];
-        System.arraycopy(shortestPath, 0, bestPath, 0, numCities);
-        int minDistance = Integer.MAX_VALUE;
-
-        do {
-            int currentDistance = calculateTotalDistance(shortestPath, matrix);
-            if (currentDistance < minDistance) {
-                minDistance = currentDistance;
-                System.arraycopy(shortestPath, 0, bestPath, 0, numCities);
-            }
-        } while (nextPermutation(shortestPath));
-
-        System.out.print("The shortest path is: ");
-        for (int city : bestPath) {
+        // Print the path and total distance
+        System.out.print("The path is: ");
+        for (int city : path) {
             System.out.print(city + " -> ");
         }
-        System.out.println(bestPath[0]); // To complete the cycle
-        System.out.println("The minimum distance is: " + minDistance);
+        System.out.println(path[0]); // To complete the cycle
+        System.out.println("The total distance is: " + totalDistance);
     }
 
     private static int[][] parseMatrix(String matrixInput, int numCities) {
@@ -51,47 +41,37 @@ public class TravelingSalesman {
         return matrix;
     }
 
-    private static int calculateTotalDistance(int[] path, int[][] matrix) {
-        int totalDistance = 0;
-        for (int i = 0; i < path.length - 1; i++) {
-            totalDistance += matrix[path[i]][path[i + 1]];
+    private static int[] nearestNeighborTSP(int[][] distanceMatrix) {
+        int numCities = distanceMatrix.length;
+        boolean[] visited = new boolean[numCities];
+        int[] path = new int[numCities];
+        int currentCity = 0;
+
+        for (int i = 0; i < numCities; i++) {
+            visited[currentCity] = true;
+            path[i] = currentCity;
+
+            int nextCity = -1;
+            int minDistance = Integer.MAX_VALUE;
+            for (int j = 0; j < numCities; j++) {
+                if (!visited[j] && distanceMatrix[currentCity][j] < minDistance) {
+                    nextCity = j;
+                    minDistance = distanceMatrix[currentCity][j];
+                }
+            }
+
+            currentCity = nextCity;
         }
-        totalDistance += matrix[path[path.length - 1]][path[0]]; // Return to the starting city
-        return totalDistance;
+
+        return path;
     }
 
-    private static boolean nextPermutation(int[] array) {
-        // Find the largest index k such that array[k] < array[k + 1]
-        int k = array.length - 2;
-        while (k >= 0 && array[k] >= array[k + 1]) {
-            k--;
+    private static int calculateTotalDistance(int[] path, int[][] distanceMatrix) {
+        int totalDistance = 0;
+        for (int i = 0; i < path.length - 1; i++) {
+            totalDistance += distanceMatrix[path[i]][path[i + 1]];
         }
-        if (k < 0) {
-            return false;
-        }
-
-        // Find the largest index l greater than k such that array[k] < array[l]
-        int l = array.length - 1;
-        while (array[k] >= array[l]) {
-            l--;
-        }
-
-        // Swap the value of array[k] with that of array[l]
-        int temp = array[k];
-        array[k] = array[l];
-        array[l] = temp;
-
-        // Reverse the sequence from array[k + 1] up to and including the final element array[array.length - 1]
-        int start = k + 1;
-        int end = array.length - 1;
-        while (start < end) {
-            temp = array[start];
-            array[start] = array[end];
-            array[end] = temp;
-            start++;
-            end--;
-        }
-
-        return true;
+        totalDistance += distanceMatrix[path[path.length - 1]][path[0]]; // Return to the starting city
+        return totalDistance;
     }
 }
