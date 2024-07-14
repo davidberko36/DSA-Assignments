@@ -50,4 +50,3 @@ The application includes input validation to ensure that user inputs are within 
 ## Exiting the Application
 
 Choose option 0 from the main menu to exit the application.
-
