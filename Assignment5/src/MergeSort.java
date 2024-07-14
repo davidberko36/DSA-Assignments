@@ -1,79 +1,83 @@
+import java.util.Arrays;
+import java.util.Scanner;
+
 public class MergeSort {
-    public static void main(String[] args) {
-        int[] array = {38, 27, 43, 3, 9, 82, 10};
-        System.out.println("Original Array:");
-        printArray(array);
+    // Method to merge two halves
+    private void merge(int[] arr, int left, int mid, int right) {
+        int n1 = mid - left + 1;
+        int n2 = right - mid;
 
-        mergeSort(array, 0, array.length - 1);
+        int[] L = new int[n1];
+        int[] R = new int[n2];
 
-        System.out.println("Sorted Array:");
-        printArray(array);
-    }
-
-    // Function to sort the array using merge sort
-    public static void mergeSort(int[] array, int left, int right) {
-        if (left < right) {
-            int middle = (left + right) / 2;
-
-            // Recursively sort the left and right halves
-            mergeSort(array, left, middle);
-            mergeSort(array, middle + 1, right);
-
-            // Merge the sorted halves
-            merge(array, left, middle, right);
+        // Copy data to temp arrays
+        for (int i = 0; i < n1; ++i) {
+            L[i] = arr[left + i];
         }
-    }
+        for (int j = 0; j < n2; ++j) {
+            R[j] = arr[mid + 1 + j];
+        }
 
-    // Function to merge two sorted halves
-    public static void merge(int[] array, int left, int middle, int right) {
-        // Find sizes of the two subarrays to be merged
-        int n1 = middle - left + 1;
-        int n2 = right - middle;
+        // Merge the temp arrays
 
-        // Create temporary arrays
-        int[] leftArray = new int[n1];
-        int[] rightArray = new int[n2];
-
-        // Copy data to temporary arrays
-        System.arraycopy(array, left, leftArray, 0, n1);
-        System.arraycopy(array, middle + 1, rightArray, 0, n2);
-
-        // Initial indexes of first and second subarrays
+        // Initial indices of first and second subarrays
         int i = 0, j = 0;
 
-        // Initial index of the merged subarray
+        // Initial index of merged subarray array
         int k = left;
         while (i < n1 && j < n2) {
-            if (leftArray[i] <= rightArray[j]) {
-                array[k] = leftArray[i];
+            if (L[i] <= R[j]) {
+                arr[k] = L[i];
                 i++;
             } else {
-                array[k] = rightArray[j];
+                arr[k] = R[j];
                 j++;
             }
             k++;
         }
 
-        // Copy remaining elements of leftArray[] if any
+        // Copy remaining elements of L[] if any
         while (i < n1) {
-            array[k] = leftArray[i];
+            arr[k] = L[i];
             i++;
             k++;
         }
 
-        // Copy remaining elements of rightArray[] if any
+        // Copy remaining elements of R[] if any
         while (j < n2) {
-            array[k] = rightArray[j];
+            arr[k] = R[j];
             j++;
             k++;
         }
     }
 
-    // Function to print the array
-    public static void printArray(int[] array) {
-        for (int value : array) {
-            System.out.print(value + " ");
+    // Main function that sorts arr[l..r] using merge()
+    private void sort(int[] arr, int left, int right) {
+        if (left < right) {
+            // Find the middle point
+            int mid = (left + right) / 2;
+
+            // Sort first and second halves
+            sort(arr, left, mid);
+            sort(arr, mid + 1, right);
+
+            // Merge the sorted halves
+            merge(arr, left, mid, right);
         }
-        System.out.println();
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter a list of integers separated by commas:");
+        String input = scanner.nextLine();
+
+        // Split the input string by commas and convert to an array of integers
+        String[] inputArray = input.split(",");
+        int[] arr = Arrays.stream(inputArray).mapToInt(Integer::parseInt).toArray();
+
+        MergeSort mergeSort = new MergeSort();
+        mergeSort.sort(arr, 0, arr.length - 1);
+
+        System.out.println("Sorted array: " + Arrays.toString(arr));
     }
 }

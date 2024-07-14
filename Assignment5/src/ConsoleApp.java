@@ -7,12 +7,19 @@ public class ConsoleApp {
 
         while (!exit) {
             System.out.println("Choose an operation:");
-            System.out.println("1. QuickSort");
+            System.out.println("1. Quick Sort");
             System.out.println("2. Traveling Salesman Problem");
             System.out.println("3. Huffman Coding");
+            System.out.println("4. Kruskal's Algorithm");
+            System.out.println("5. Dijkstra's Algorithm");
+            System.out.println("6. Quick Hull");
+            System.out.println("7. Strassen Algorithm");
+            System.out.println("8. Prim's Algorithm");
+            System.out.println("9. Merge Sort");
+            System.out.println("10. Closest Pair");
             System.out.println("0. Exit");
 
-            int choice = getValidIntInput(scanner, "Enter your choice: ", 0, 3);
+            int choice = getValidIntInput(scanner, "Enter your choice: ", 0, 10);
 
             switch (choice) {
                 case 1:
@@ -23,6 +30,27 @@ public class ConsoleApp {
                     break;
                 case 3:
                     HuffmanCoding.main(new String[0]);
+                    break;
+                case 4:
+                    KruskalMain.main(new String[0]);
+                    break;
+                case 5:
+                    Dijkstra.main(new String[0]);
+                    break;
+                case 6:
+                    QuickHull.main(new String[0]);
+                    break;
+                case 7:
+                    Strassen.main(new String[0]);
+                    break;
+                case 8:
+                    PrimMain.main(new String[0]);
+                    break;
+                case 9:
+                    MergeSort.main(new String[0]);
+                    break;
+                case 10:
+                    ClosestPair.main(new String[0]);
                     break;
                 case 0:
                     exit = true;
