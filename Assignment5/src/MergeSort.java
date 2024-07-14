@@ -69,7 +69,7 @@ public class MergeSort {
         }
     }
 
-    // Utility function to print the array
+    // Function to print the array
     public static void printArray(int[] array) {
         for (int value : array) {
             System.out.print(value + " ");

@@ -7,7 +7,7 @@ public class TravelingSalesman {
         // Read the number of cities
         System.out.print("Enter the number of cities: ");
         int numCities = scanner.nextInt();
-        scanner.nextLine(); // Consume the newline character
+        scanner.nextLine();
 
         // Read the distance matrix
         System.out.print("Enter the " + numCities + "x" + numCities + " distance matrix (columns separated by commas and rows by semicolons): ");
